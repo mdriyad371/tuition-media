@@ -37,7 +37,7 @@
         .edit-photo-btn {
             position: absolute; bottom: 5px; right: 5px; background: #667eea; color: white;
             border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer;
-            font-size: 18px; transition: all 0.3s;
+            font-size: 18px;
         }
         .profile-name { font-size: 28px; font-weight: bold; color: #333; }
         .profile-role { color: #667eea; margin: 5px 0; font-size: 16px; }
@@ -50,13 +50,12 @@
         .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
         .btn-outline { background: transparent; border: 2px solid #667eea; color: #667eea; }
         .btn-danger { background: #ff4757; color: white; }
-        .btn-success { background: #28a745; color: white; }
         
         .info-grid { display: grid; gap: 15px; margin-top: 20px; }
         .info-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8f9fa; border-radius: 10px; flex-wrap: wrap; gap: 10px; }
         .info-label { font-weight: 600; color: #666; min-width: 120px; }
         .info-value { color: #333; flex: 1; }
-        .info-edit-btn { background: none; border: none; color: #667eea; cursor: pointer; font-size: 16px; padding: 5px 10px; border-radius: 5px; }
+        .info-edit-btn { background: none; border: none; color: #667eea; cursor: pointer; font-size: 16px; padding: 5px 10px; }
         
         .badge { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin: 3px; }
         .badge-success { background: #d4edda; color: #155724; }
@@ -136,7 +135,6 @@
         </div>
     </div>
 
-    <!-- Edit Modal -->
     <div id="editModal" class="modal">
         <div class="modal-content"><h2 style="margin-bottom:20px;">✏️ Edit Profile</h2>
             <form id="editForm"><div class="form-group"><label>Full Name</label><input type="text" id="editName" required></div>
@@ -151,7 +149,6 @@
         </div>
     </div>
 
-    <!-- Photo Modal -->
     <div id="photoModal" class="modal">
         <div class="modal-content"><h2 style="margin-bottom:20px;">📸 Update Photo</h2>
             <div class="form-group"><label>Photo URL</label><input type="text" id="photoUrl" placeholder="Enter image URL"></div>
@@ -159,7 +156,6 @@
         </div>
     </div>
 
-    <!-- Subject Modal -->
     <div id="subjectModal" class="modal">
         <div class="modal-content"><h2 style="margin-bottom:20px;">➕ Add Subject</h2>
             <div class="form-group"><label>Subject Name</label><input type="text" id="newSubject"></div>
@@ -171,6 +167,7 @@
         let currentUser = null;
         let users = [];
         let tuitionJobs = [];
+        let successfulMatches = [];
         
         function loadUsers() {
             const saved = localStorage.getItem('tuition_users');
@@ -185,12 +182,8 @@
         }
         
         function saveUsers() { localStorage.setItem('tuition_users', JSON.stringify(users)); }
-        
-        function loadJobs() {
-            const saved = localStorage.getItem('tuition_jobs');
-            if(saved) { tuitionJobs = JSON.parse(saved); }
-            else { tuitionJobs = []; }
-        }
+        function loadJobs() { const saved = localStorage.getItem('tuition_jobs'); if(saved) tuitionJobs = JSON.parse(saved); else tuitionJobs = []; }
+        function loadMatches() { const saved = localStorage.getItem('successful_matches'); if(saved) successfulMatches = JSON.parse(saved); else successfulMatches = []; }
         
         function checkLogin() {
             const saved = localStorage.getItem('currentUser');
@@ -284,9 +277,10 @@
                 <div class="admin-stats"><div class="stat-box"><h3>${users.length}</h3><p>Total Users</p></div>
                 <div class="stat-box"><h3>${tutorCount}</h3><p>Tutors</p></div>
                 <div class="stat-box"><h3>${studentCount}</h3><p>Students</p></div>
-                <div class="stat-box"><h3>${tuitionJobs.length}</h3><p>Jobs</p></div></div>
-                <button class="btn btn-primary" style="margin-top:10px;" onclick="window.location.href='tuition-jobs.html'">Manage Jobs</button>
-                <button class="btn btn-outline" style="margin-top:10px;" onclick="window.location.href='find-tutors.html'">Manage Tutors</button></div>
+                <div class="stat-box"><h3>${tuitionJobs.length}</h3><p>Active Jobs</p></div>
+                <div class="stat-box"><h3>${successfulMatches.length}</h3><p>Successful Matches</p></div></div>
+                <a href="tuition-jobs.html" class="btn btn-primary" style="margin-top:10px;">Manage Jobs</a>
+                <a href="find-tutors.html" class="btn btn-outline" style="margin-top:10px;">Manage Tutors</a></div>
                 <div class="button-group"><button class="btn btn-danger" onclick="logout()">Logout</button></div></div>`;
         }
         
@@ -405,6 +399,7 @@
         
         loadUsers();
         loadJobs();
+        loadMatches();
         checkLogin();
         renderProfile();
     </script>
