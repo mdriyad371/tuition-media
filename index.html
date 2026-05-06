@@ -41,7 +41,6 @@
             transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px;
         }
         .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-        .btn-success { background: #28a745; color: white; }
         .btn-wa { background: #25D366; color: white; text-decoration: none; justify-content: center; margin-top: 15px; width: 100%; }
         
         .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
@@ -108,7 +107,7 @@
                         <div>🎓 ${job.class}</div><div>📍 ${job.area}</div>
                         <div>📖 ${job.medium}</div><div>💰 Tk ${job.salary}/month</div>
                     </div>
-                    ${currentUser?.role === 'tutor' ? `
+                    ${currentUser?.role === 'tutor' || currentUser?.hasBothRoles === true ? `
                         <a href="https://wa.me/${ADMIN_WHATSAPP}?text=%F0%9F%93%8C%20টিউশন%20কোড:%20${job.code}%0A📖%20সাবজেক্ট:%20${job.subject}%0A🎓%20ক্লাস:%20${job.class}%0A📍%20এলাকা:%20${job.area}%0A💰%20বেতন:%20Tk%20${job.salary}%0A%0A👨‍🏫%20আমার%20নাম:%20${currentUser.name}%0A📞%20আমার%20ফোন:%20${currentUser.phone}%0A%0Aআমি%20এই%20টিউশনটির%20জন্য%20আগ্রহী।" class="btn btn-wa" target="_blank"><i class="fab fa-whatsapp"></i> Apply Now</a>
                     ` : ''}
                 </div>
