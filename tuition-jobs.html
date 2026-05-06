@@ -43,6 +43,7 @@
         .btn-wa { background: #25D366; color: white; text-decoration: none; justify-content: center; margin-top: 15px; width: 100%; }
         .btn-danger { background: #dc3545; color: white; }
         .btn-success { background: #28a745; color: white; }
+        .btn-switch { background: #ffc107; color: #333; }
         
         .filter-section {
             background: white; border-radius: 15px; padding: 20px;
@@ -70,6 +71,17 @@
             margin-right: 10px;
         }
         
+        .role-switch-bar {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 10px 20px;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            color: white;
+        }
+        
         .job-details { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0; font-size: 14px; color: #666; }
         .salary { color: #667eea; font-weight: bold; font-size: 18px; }
         .tuition-code { background: linear-gradient(135deg, #667eea20, #764ba220); padding: 10px; border-radius: 10px; font-family: monospace; font-size: 16px; font-weight: bold; text-align: center; margin: 10px 0; }
@@ -91,6 +103,13 @@
         .generated-code { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 15px; border-radius: 10px; text-align: center; margin: 15px 0; }
         .generated-code span { font-size: 24px; font-weight: bold; letter-spacing: 2px; }
         
+        .current-role-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        
         @media (max-width: 768px) { .page { padding: 15px; } .job-details { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -103,7 +122,13 @@
     </div>
 
     <div class="page">
-        <div class="page-header"><h1>💼 Tuition Jobs</h1><button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="showPostModal()">+ Post a Tuition Job</button></div>
+        <div class="page-header">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <h1>💼 Tuition Jobs</h1>
+                <div id="roleSwitchContainer"></div>
+            </div>
+            <button class="btn btn-primary" style="width:100%; margin-top:10px;" id="postJobBtn" onclick="showPostModal()">+ Post a Tuition Job</button>
+        </div>
         
         <!-- Admin Search Section -->
         <div id="adminSearchSection" class="admin-search" style="display:none;">
@@ -153,6 +178,7 @@
     <script>
         const ADMIN_WHATSAPP = "88017091303712";
         let currentUser = null;
+        let currentActiveRole = null; // 'student' or 'tutor' - which role user is acting as
         
         function generateTuitionCode() {
             const prefix = "TUT";
@@ -179,11 +205,69 @@
             const saved = localStorage.getItem('currentUser'); 
             if (saved) {
                 currentUser = JSON.parse(saved);
+                // Set default active role
+                if(!currentActiveRole) {
+                    // If user has both roles, default to student, else use their only role
+                    if(currentUser.hasBothRoles) {
+                        currentActiveRole = localStorage.getItem('activeRole') || 'student';
+                    } else {
+                        currentActiveRole = currentUser.role;
+                    }
+                }
                 // Show admin search section for admin
                 if(currentUser.role === 'admin') {
                     document.getElementById('adminSearchSection').style.display = 'block';
                 }
+                updateRoleSwitchUI();
             }
+        }
+        
+        function updateRoleSwitchUI() {
+            const container = document.getElementById('roleSwitchContainer');
+            if(!currentUser) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            // Check if user has both roles
+            const hasStudentRole = currentUser.hasBothRoles || currentUser.role === 'student';
+            const hasTutorRole = currentUser.hasBothRoles || currentUser.role === 'tutor';
+            
+            if(currentUser.role === 'admin') {
+                container.innerHTML = '<span class="current-role-badge"><i class="fas fa-shield-alt"></i> Admin Mode</span>';
+                document.getElementById('postJobBtn').style.display = 'none';
+                return;
+            }
+            
+            if(currentUser.hasBothRoles) {
+                // User can switch between roles
+                container.innerHTML = `
+                    <div class="role-switch-bar">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span>Acting as:</span>
+                        <button class="btn ${currentActiveRole === 'student' ? 'btn-success' : 'btn-outline'}" style="padding: 5px 15px; margin:0;" onclick="switchRole('student')">
+                            <i class="fas fa-user-graduate"></i> Student
+                        </button>
+                        <button class="btn ${currentActiveRole === 'tutor' ? 'btn-success' : 'btn-outline'}" style="padding: 5px 15px; margin:0;" onclick="switchRole('tutor')">
+                            <i class="fas fa-chalkboard-teacher"></i> Tutor
+                        </button>
+                    </div>
+                `;
+                document.getElementById('postJobBtn').style.display = currentActiveRole === 'student' ? 'block' : 'none';
+            } else if(currentUser.role === 'student') {
+                container.innerHTML = '<span class="current-role-badge"><i class="fas fa-user-graduate"></i> Student Mode</span>';
+                document.getElementById('postJobBtn').style.display = 'block';
+            } else if(currentUser.role === 'tutor') {
+                container.innerHTML = '<span class="current-role-badge"><i class="fas fa-chalkboard-teacher"></i> Tutor Mode</span>';
+                document.getElementById('postJobBtn').style.display = 'none';
+            }
+        }
+        
+        function switchRole(role) {
+            currentActiveRole = role;
+            localStorage.setItem('activeRole', role);
+            updateRoleSwitchUI();
+            renderJobs(); // Re-render jobs to show appropriate buttons
         }
         
         function searchByCode() {
@@ -223,7 +307,6 @@
                 const jobIndex = tuitionJobs.findIndex(j => j.code === code);
                 if(jobIndex !== -1) {
                     const job = tuitionJobs[jobIndex];
-                    // Add to successful matches
                     successfulMatches.push({
                         id: Date.now(),
                         code: job.code,
@@ -232,14 +315,11 @@
                         confirmedDate: new Date().toISOString().split('T')[0]
                     });
                     saveMatches();
-                    // Delete from tuition jobs
                     tuitionJobs.splice(jobIndex, 1);
                     saveJobs();
                     alert(`✅ Tuition job ${code} has been confirmed and added to successful matches!`);
                     clearSearch();
                     renderJobs();
-                    // Update stats on home page if needed
-                    localStorage.setItem('homeStatsUpdated', Date.now());
                 }
             }
         }
@@ -276,10 +356,14 @@
                             <button class="btn btn-success" style="margin-top:10px;" onclick="confirmAndDelete('${job.code}')"><i class="fas fa-check-circle"></i> Confirm & Delete</button>
                             <button class="btn btn-danger" style="margin-top:10px; margin-left:10px;" onclick="deleteJob(${job.id})"><i class="fas fa-trash"></i> Delete</button>
                         </div>
-                    ` : currentUser?.role === 'tutor' ? `
+                    ` : (currentUser && (currentActiveRole === 'tutor' || currentUser.role === 'tutor')) ? `
                         <div class="hidden-contact"><i class="fas fa-lock"></i> Student contact info is hidden. Apply via WhatsApp.</div>
                         <a href="https://wa.me/${ADMIN_WHATSAPP}?text=%F0%9F%93%8C%20টিউশন%20কোড:%20${job.code}%0A📖%20সাবজেক্ট:%20${job.subject}%0A🎓%20ক্লাস:%20${job.class}%0A📍%20এলাকা:%20${job.area}%0A💰%20বেতন:%20Tk%20${job.salary}%0A📖%20মাধ্যম:%20${job.medium}%0A%0A👨‍🏫%20আমার%20নাম:%20${currentUser.name}%0A📞%20আমার%20ফোন:%20${currentUser.phone}%0A%0Aআমি%20এই%20টিউশনটির%20জন্য%20আগ্রহী।" class="btn btn-wa" target="_blank"><i class="fab fa-whatsapp"></i> Apply for this job</a>
-                    ` : `<div class="hidden-contact"><i class="fas fa-lock"></i> Please login as tutor to apply</div>`}
+                    ` : currentUser?.role === 'student' || currentActiveRole === 'student' ? `
+                        <div class="hidden-contact"><i class="fas fa-info-circle"></i> You are in Student mode. Switch to Tutor mode to apply for jobs.</div>
+                    ` : `
+                        <div class="hidden-contact"><i class="fas fa-lock"></i> Please login as tutor to apply</div>
+                    `}
                 </div>
             `).join('');
             document.getElementById('jobsList').innerHTML = html;
@@ -315,7 +399,15 @@
         
         function showPostModal() {
             if(!currentUser) { alert('Please login first'); return; }
-            if(currentUser.role !== 'student') { alert('Only students can post jobs'); return; }
+            if(currentUser.role === 'admin') { alert('Admin cannot post tuition jobs'); return; }
+            if(currentUser.hasBothRoles && currentActiveRole !== 'student') { 
+                alert('Please switch to Student mode to post a tuition job'); 
+                return;
+            }
+            if(currentUser.role !== 'student' && !currentUser.hasBothRoles) { 
+                alert('Only students can post jobs. Register as student or add student role to your account.'); 
+                return;
+            }
             document.getElementById('postModal').style.display = 'flex';
             const newCode = generateTuitionCode();
             document.getElementById('newTuitionCode').textContent = newCode;
@@ -325,7 +417,8 @@
         function closePostModal() { document.getElementById('postModal').style.display = 'none'; }
         
         function postJob() {
-            if(!currentUser || currentUser.role !== 'student') { alert('Only students can post'); return; }
+            if(!currentUser) { alert('Please login first'); return; }
+            
             const phone = document.getElementById('studentPhone').value;
             if(!phone) { alert('Please provide your phone number'); return; }
             
