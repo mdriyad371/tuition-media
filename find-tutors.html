@@ -62,6 +62,18 @@
         .hidden-contact { background: #f0f0f0; padding: 10px; border-radius: 8px; text-align: center; color: #666; font-style: italic; margin-top: 10px; }
         .admin-contact { background: #fff3cd; padding: 10px; border-radius: 8px; margin-top: 10px; border-left: 3px solid #ffc107; }
         
+        .current-role-badge {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
         @media (max-width: 768px) { .page { padding: 15px; } }
     </style>
 </head>
@@ -74,7 +86,11 @@
     </div>
 
     <div class="page">
-        <div class="page-header"><h1>🔍 Find Tutors</h1><input type="text" id="searchTutor" class="search-input" placeholder="Search by name, subject, or area..."></div>
+        <div class="page-header">
+            <h1>🔍 Find Tutors</h1>
+            <div id="roleDisplay"></div>
+            <input type="text" id="searchTutor" class="search-input" placeholder="Search by name, subject, or area...">
+        </div>
         
         <div class="filter-section">
             <div class="filter-title"><strong>🔍 Filter Tutors</strong></div>
@@ -98,6 +114,45 @@
         
         function checkLogin() { const saved = localStorage.getItem('currentUser'); if (saved) currentUser = JSON.parse(saved); }
         
+        function displayCurrentRole() {
+            const container = document.getElementById('roleDisplay');
+            if(!currentUser) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            const activeRole = localStorage.getItem('activeRole') || 'student';
+            let roleText = '';
+            let roleIcon = '';
+            
+            if(currentUser.role === 'admin') {
+                roleText = 'Admin Mode';
+                roleIcon = 'fa-shield-alt';
+            } else if(currentUser.hasBothRoles) {
+                if(activeRole === 'student') {
+                    roleText = 'Acting as: Student (You can post tuition jobs)';
+                    roleIcon = 'fa-user-graduate';
+                } else {
+                    roleText = 'Acting as: Tutor (You can apply for tuition jobs)';
+                    roleIcon = 'fa-chalkboard-teacher';
+                }
+            } else if(currentUser.role === 'student') {
+                roleText = 'Student Mode (You can post tuition jobs)';
+                roleIcon = 'fa-user-graduate';
+            } else if(currentUser.role === 'tutor') {
+                roleText = 'Tutor Mode (You can apply for tuition jobs)';
+                roleIcon = 'fa-chalkboard-teacher';
+            }
+            
+            container.innerHTML = `
+                <div class="current-role-badge">
+                    <i class="fas ${roleIcon}"></i>
+                    ${roleText}
+                    ${currentUser.hasBothRoles ? '<span style="font-size:11px; background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:15px;">Change from Profile</span>' : ''}
+                </div>
+            `;
+        }
+        
         function renderTutors() {
             let filtered = [...tutors];
             const search = document.getElementById('searchTutor')?.value.toLowerCase() || '';
@@ -110,6 +165,9 @@
                 if(subject && !t.subjects.includes(subject)) return false;
                 return true;
             });
+            
+            const activeRole = localStorage.getItem('activeRole') || 'student';
+            const canHire = currentUser && (currentUser.role === 'student' || (currentUser.hasBothRoles && activeRole === 'student'));
             
             const html = filtered.map(t => `
                 <div class="card">
@@ -140,10 +198,14 @@
                             <i class="fab fa-whatsapp"></i> WhatsApp: ${t.whatsapp || t.phone}<br>
                             <button class="btn btn-primary" style="margin-top:10px;" onclick="copyToClipboard('${t.phone}')"><i class="fas fa-copy"></i> Copy Phone</button>
                         </div>
-                    ` : currentUser?.role === 'student' ? `
+                    ` : canHire ? `
                         <div class="hidden-contact">
                             <i class="fas fa-lock"></i> Contact information is hidden. 
                             <a href="https://wa.me/${ADMIN_WHATSAPP}?text=আমি%20${t.name}%20Sir/Madam%20কে%20টিউটর%20হিসেবে%20নিয়োগ%20করতে%20চাই।%0A👨‍🏫%20টিউটর:%20${t.name}%0A👤%20আমার%20নাম:%20${currentUser.name}%0A📞%20আমার%20ফোন:%20${currentUser.phone}%0A📚%20সাবজেক্ট:%20${t.subjects.join(', ')}" class="btn btn-wa" target="_blank">এডমিনের মাধ্যমে টিউটর নিয়োগ করুন</a>
+                        </div>
+                    ` : currentUser?.hasBothRoles && activeRole === 'tutor' ? `
+                        <div class="hidden-contact">
+                            <i class="fas fa-info-circle"></i> You are in Tutor mode. Switch to Student mode from Profile to hire tutors.
                         </div>
                     ` : `
                         <div class="hidden-contact">
@@ -160,6 +222,7 @@
         document.getElementById('searchTutor')?.addEventListener('keyup', filterTutors);
         
         checkLogin();
+        displayCurrentRole();
         renderTutors();
     </script>
 </body>
