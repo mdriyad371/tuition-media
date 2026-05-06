@@ -50,6 +50,8 @@
         .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
         .btn-outline { background: transparent; border: 2px solid #667eea; color: #667eea; }
         .btn-danger { background: #ff4757; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: #333; }
         
         .info-grid { display: grid; gap: 15px; margin-top: 20px; }
         .info-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8f9fa; border-radius: 10px; flex-wrap: wrap; gap: 10px; }
@@ -59,6 +61,8 @@
         
         .badge { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin: 3px; }
         .badge-success { background: #d4edda; color: #155724; }
+        .badge-info { background: #d1ecf1; color: #0c5460; }
+        .badge-warning { background: #fff3cd; color: #856404; }
         
         .subjects-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
         .subject-tag { background: #e3f2fd; color: #1976d2; padding: 5px 12px; border-radius: 20px; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; }
@@ -83,6 +87,15 @@
         .admin-panel { background: #fff3cd; padding: 15px; border-radius: 10px; margin-top: 20px; }
         .admin-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; }
         .stat-box { background: white; padding: 10px; border-radius: 8px; text-align: center; }
+        
+        .role-card {
+            background: linear-gradient(135deg, #667eea20, #764ba220);
+            border: 2px solid #667eea;
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .role-buttons { display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap; }
         
         .auth-tabs { display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid #e0e0e0; }
         .auth-tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; background: none; border: none; font-size: 16px; font-weight: 600; color: #666; }
@@ -127,7 +140,13 @@
                 <div class="form-group"><label>Full Name</label><input type="text" id="regName"></div>
                 <div class="form-group"><label>Email</label><input type="email" id="regEmail"></div>
                 <div class="form-group"><label>Phone</label><input type="tel" id="regPhone"></div>
-                <div class="form-group"><label>Role</label><select id="regRole"><option value="student">Student</option><option value="tutor">Tutor</option></select></div>
+                <div class="form-group"><label>I want to be a</label>
+                    <select id="regRole">
+                        <option value="both">Both (Student & Tutor) - Recommended</option>
+                        <option value="student">Only Student</option>
+                        <option value="tutor">Only Tutor</option>
+                    </select>
+                </div>
                 <div class="form-group"><label>Password</label><input type="password" id="regPassword"></div>
                 <div class="form-group"><label>Confirm Password</label><input type="password" id="regConfirmPassword"></div>
                 <button class="btn btn-primary" style="width:100%" onclick="register()">Register</button>
@@ -141,10 +160,11 @@
             <div class="form-group"><label>Phone</label><input type="tel" id="editPhone" required></div>
             <div class="form-group"><label>Email</label><input type="email" id="editEmail" required></div>
             <div class="form-group"><label>Address/Area</label><input type="text" id="editAddress"></div>
-            <div id="editStudentFields" style="display:none;"><div class="form-group"><label>Class</label><select id="editClass"><option>Class 1-5</option><option>Class 6-8</option><option>Class 9-10</option><option>HSC</option><option>University</option></select></div>
-            <div class="form-group"><label>Subjects</label><input type="text" id="editSubjects"></div></div>
-            <div id="editTutorFields" style="display:none;"><div class="form-group"><label>Qualification</label><textarea id="editQualification" rows="4"></textarea></div>
-            <div class="form-group"><label>Experience</label><input type="text" id="editExperience"></div></div>
+            <div id="editStudentFields" style="display:none;"><div class="form-group"><label>Class (as Student)</label><select id="editClass"><option>Class 1-5</option><option>Class 6-8</option><option>Class 9-10</option><option>HSC</option><option>University</option></select></div>
+            <div class="form-group"><label>Subjects (as Student)</label><input type="text" id="editSubjects"></div></div>
+            <div id="editTutorFields" style="display:none;"><div class="form-group"><label>Qualification (as Tutor)</label><textarea id="editQualification" rows="4"></textarea></div>
+            <div class="form-group"><label>Experience (as Tutor)</label><input type="text" id="editExperience"></div>
+            <div class="form-group"><label>Teaching Subjects (as Tutor)</label><input type="text" id="editTutorSubjects" placeholder="Mathematics, Physics, English"></div></div>
             <div class="button-group"><button type="submit" class="btn btn-primary">Save</button><button type="button" class="btn btn-outline" onclick="closeEditModal()">Cancel</button></div></form>
         </div>
     </div>
@@ -157,7 +177,7 @@
     </div>
 
     <div id="subjectModal" class="modal">
-        <div class="modal-content"><h2 style="margin-bottom:20px;">➕ Add Subject</h2>
+        <div class="modal-content"><h2 style="margin-bottom:20px;">➕ Add Teaching Subject</h2>
             <div class="form-group"><label>Subject Name</label><input type="text" id="newSubject"></div>
             <div class="button-group"><button class="btn btn-primary" onclick="addNewSubject()">Add</button><button class="btn btn-outline" onclick="closeSubjectModal()">Cancel</button></div>
         </div>
@@ -175,7 +195,10 @@
             else {
                 users = [
                     { id:1, name:"Admin", email:"admin@tuition.com", phone:"88017091303712", password:"admin123", role:"admin", profilePhoto:"https://randomuser.me/api/portraits/men/99.jpg" },
-                    { id:2, name:"শাহিদুল ইসলাম", email:"tutor@example.com", phone:"01712345678", password:"123456", role:"tutor", profilePhoto:"https://randomuser.me/api/portraits/men/1.jpg", qualification:"M.Sc in Mathematics, DU\n৫ বছর অভিজ্ঞতা", subjects:["Mathematics","Physics"], area:"ধানমন্ডি", experience:"৫ বছর", rating:4.8 }
+                    { id:2, name:"রহমান", email:"student@example.com", phone:"01712345678", password:"123456", role:"student", hasBothRoles:true, 
+                      studentProfile: { class:"Class 9-10", subjects:"Mathematics, Physics" },
+                      tutorProfile: { qualification:"B.Sc in CSE", experience:"2 years", subjects:["Programming","ICT"], area:"Dhanmondi" },
+                      profilePhoto:"https://randomuser.me/api/portraits/men/1.jpg" }
                 ];
                 saveUsers();
             }
@@ -239,19 +262,69 @@
             const name = document.getElementById('regName').value;
             const email = document.getElementById('regEmail').value;
             const phone = document.getElementById('regPhone').value;
-            const role = document.getElementById('regRole').value;
+            const roleType = document.getElementById('regRole').value;
             const password = document.getElementById('regPassword').value;
             const confirm = document.getElementById('regConfirmPassword').value;
+            
             if(!name || !email || !phone || !password) { showAlert('Fill all fields', 'error'); return; }
             if(password !== confirm) { showAlert('Passwords do not match', 'error'); return; }
             if(users.find(u => u.email === email)) { showAlert('Email already exists', 'error'); return; }
-            const newUser = { id:Date.now(), name, email, phone, password, role, profilePhoto:'https://via.placeholder.com/150' };
+            
+            let newUser;
+            if(roleType === 'both') {
+                newUser = { 
+                    id: Date.now(), name, email, phone, password, 
+                    role: 'both', hasBothRoles: true,
+                    studentProfile: { class: 'Class 9-10', subjects: '' },
+                    tutorProfile: { qualification: '', experience: '', subjects: [], area: '' },
+                    profilePhoto: 'https://via.placeholder.com/150'
+                };
+            } else {
+                newUser = { 
+                    id: Date.now(), name, email, phone, password, 
+                    role: roleType, hasBothRoles: false,
+                    profilePhoto: 'https://via.placeholder.com/150'
+                };
+                if(roleType === 'student') {
+                    newUser.studentProfile = { class: 'Class 9-10', subjects: '' };
+                } else if(roleType === 'tutor') {
+                    newUser.tutorProfile = { qualification: '', experience: '', subjects: [], area: '' };
+                }
+            }
             users.push(newUser);
             saveUsers();
             saveCurrentUser(newUser);
             closeAuthModal();
             renderProfile();
-            showAlert('Registration successful!', 'success');
+            showAlert('Registration successful! You can now act as both Student and Tutor!', 'success');
+        }
+        
+        function addTutorRole() {
+            if(confirm('Do you want to add Tutor role to your account? You will be able to apply for tuition jobs.')) {
+                currentUser.hasBothRoles = true;
+                currentUser.role = 'both';
+                currentUser.tutorProfile = { qualification: '', experience: '', subjects: [], area: '' };
+                const index = users.findIndex(u => u.id === currentUser.id);
+                if(index !== -1) users[index] = currentUser;
+                saveUsers();
+                saveCurrentUser(currentUser);
+                renderProfile();
+                showAlert('Tutor role added! You can now apply for tuition jobs.', 'success');
+            }
+        }
+        
+        function addStudentRole() {
+            if(confirm('Do you want to add Student role to your account? You will be able to post tuition jobs.')) {
+                currentUser.hasBothRoles = true;
+                currentUser.role = 'both';
+                currentUser.studentProfile = { class: 'Class 9-10', subjects: '' };
+                const index = users.findIndex(u => u.id === currentUser.id);
+                if(index !== -1) users[index] = currentUser;
+                saveUsers();
+                saveCurrentUser(currentUser);
+                renderProfile();
+                showAlert('Student role added! You can now post tuition jobs.', 'success');
+            }
         }
         
         function renderProfile() {
@@ -261,13 +334,87 @@
                 return;
             }
             if(currentUser.role === 'admin') renderAdmin();
-            else if(currentUser.role === 'tutor') renderTutor();
-            else renderStudent();
+            else renderMultiRoleProfile();
+        }
+        
+        function renderMultiRoleProfile() {
+            const hasBoth = currentUser.hasBothRoles || currentUser.role === 'both';
+            const studentData = currentUser.studentProfile || {};
+            const tutorData = currentUser.tutorProfile || {};
+            const tutorSubjects = tutorData.subjects || [];
+            
+            let profileHtml = `
+                <div class="card">
+                    <div class="profile-header">
+                        <div class="profile-image-container">
+                            <img src="${currentUser.profilePhoto || 'https://via.placeholder.com/150'}" class="profile-image">
+                            <button class="edit-photo-btn" onclick="openPhotoModal()"><i class="fas fa-camera"></i></button>
+                        </div>
+                        <div class="profile-name">${currentUser.name}</div>
+                        <div class="profile-role">
+                            ${hasBoth ? '<i class="fas fa-exchange-alt"></i> Dual Role (Student & Tutor)' : 
+                              (currentUser.role === 'student' ? '<i class="fas fa-user-graduate"></i> Student' : '<i class="fas fa-chalkboard-teacher"></i> Tutor')}
+                        </div>
+                    </div>
+                    
+                    <div class="info-grid">
+                        <div class="info-row"><span class="info-label"><i class="fas fa-envelope"></i> Email:</span><span class="info-value">${currentUser.email}</span><button class="info-edit-btn" onclick="openEditModal()"><i class="fas fa-edit"></i></button></div>
+                        <div class="info-row"><span class="info-label"><i class="fas fa-phone"></i> Phone:</span><span class="info-value">${currentUser.phone}</span><button class="info-edit-btn" onclick="openEditModal()"><i class="fas fa-edit"></i></button></div>
+                    </div>
+            `;
+            
+            // Student Section
+            if(hasBoth || currentUser.role === 'student') {
+                profileHtml += `
+                    <div class="role-card">
+                        <h3><i class="fas fa-user-graduate"></i> Student Profile</h3>
+                        <div class="info-row"><span class="info-label">Class:</span><span class="info-value">${studentData.class || 'Not set'}</span></div>
+                        <div class="info-row"><span class="info-label">Subjects:</span><span class="info-value">${studentData.subjects || 'Not set'}</span></div>
+                        <button class="btn btn-outline btn-sm" onclick="openEditModal()"><i class="fas fa-edit"></i> Edit Student Info</button>
+                    </div>
+                `;
+            }
+            
+            // Tutor Section
+            if(hasBoth || currentUser.role === 'tutor') {
+                profileHtml += `
+                    <div class="role-card">
+                        <h3><i class="fas fa-chalkboard-teacher"></i> Tutor Profile</h3>
+                        <div class="info-row"><span class="info-label">Qualification:</span><span class="info-value">${tutorData.qualification || 'Not set'}</span></div>
+                        <div class="info-row"><span class="info-label">Experience:</span><span class="info-value">${tutorData.experience || 'Not set'}</span></div>
+                        <div class="info-row"><span class="info-label">Area:</span><span class="info-value">${tutorData.area || 'Not set'}</span></div>
+                        <div><label>Teaching Subjects:</label>
+                            <div class="subjects-container">
+                                ${tutorSubjects.map(s => `<span class="subject-tag">${s}<button onclick="removeSubject('${s}')"><i class="fas fa-times"></i></button></span>`).join('')}
+                                <span class="subject-tag add-subject" onclick="openSubjectModal()"><i class="fas fa-plus"></i> Add Subject</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-outline" style="margin-top:10px;" onclick="openEditModal()"><i class="fas fa-edit"></i> Edit Tutor Info</button>
+                    </div>
+                `;
+            }
+            
+            // Add missing role buttons
+            if(!hasBoth) {
+                profileHtml += `
+                    <div class="role-card" style="background: #e3f2fd;">
+                        <h3><i class="fas fa-plus-circle"></i> Add Another Role</h3>
+                        <p>You can add both Student and Tutor roles to your account!</p>
+                        <div class="role-buttons">
+                            ${currentUser.role !== 'student' ? `<button class="btn btn-primary" onclick="addStudentRole()"><i class="fas fa-user-graduate"></i> Add Student Role</button>` : ''}
+                            ${currentUser.role !== 'tutor' ? `<button class="btn btn-primary" onclick="addTutorRole()"><i class="fas fa-chalkboard-teacher"></i> Add Tutor Role</button>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            profileHtml += `<div class="button-group"><button class="btn btn-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button></div></div>`;
+            document.getElementById('profileContainer').innerHTML = profileHtml;
         }
         
         function renderAdmin() {
-            const tutorCount = users.filter(u => u.role === 'tutor').length;
-            const studentCount = users.filter(u => u.role === 'student').length;
+            const tutorCount = users.filter(u => u.role === 'tutor' || u.hasBothRoles).length;
+            const studentCount = users.filter(u => u.role === 'student' || u.hasBothRoles).length;
             document.getElementById('profileContainer').innerHTML = `
                 <div class="card"><div class="profile-header"><div class="profile-image-container"><img src="${currentUser.profilePhoto}" class="profile-image"><button class="edit-photo-btn" onclick="openPhotoModal()"><i class="fas fa-camera"></i></button></div>
                 <div class="profile-name">${currentUser.name}</div><div class="profile-role"><i class="fas fa-shield-alt"></i> Administrator</div></div>
@@ -284,48 +431,34 @@
                 <div class="button-group"><button class="btn btn-danger" onclick="logout()">Logout</button></div></div>`;
         }
         
-        function renderTutor() {
-            const subjects = currentUser.subjects || [];
-            document.getElementById('profileContainer').innerHTML = `
-                <div class="card"><div class="profile-header"><div class="profile-image-container"><img src="${currentUser.profilePhoto}" class="profile-image"><button class="edit-photo-btn" onclick="openPhotoModal()"><i class="fas fa-camera"></i></button></div>
-                <div class="profile-name">${currentUser.name}</div><div class="profile-role"><i class="fas fa-chalkboard-teacher"></i> Professional Tutor</div><div>⭐ ${currentUser.rating || '4.5'} (${currentUser.experience || '0'} years)</div></div>
-                <div class="info-grid"><div class="info-row"><span class="info-label">Email:</span><span class="info-value">${currentUser.email}</span><button class="info-edit-btn" onclick="openEditModal()"><i class="fas fa-edit"></i></button></div>
-                <div class="info-row"><span class="info-label">Phone:</span><span class="info-value">${currentUser.phone}</span><button class="info-edit-btn" onclick="openEditModal()"><i class="fas fa-edit"></i></button></div>
-                <div class="info-row"><span class="info-label">Area:</span><span class="info-value">${currentUser.area || 'Not provided'}</span><button class="info-edit-btn" onclick="openEditModal()"><i class="fas fa-edit"></i></button></div></div>
-                <div><h3>Qualification</h3><div style="padding:15px; background:#f8f9fa; border-radius:10px;">${currentUser.qualification || 'Not added'}</div><button class="btn btn-outline" style="margin-top:10px;" onclick="openEditModal()">Edit</button></div>
-                <div style="margin-top:20px;"><h3>Teaching Subjects</h3><div class="subjects-container">${subjects.map(s => `<span class="subject-tag">${s}<button onclick="removeSubject('${s}')"><i class="fas fa-times"></i></button></span>`).join('')}<span class="subject-tag add-subject" onclick="openSubjectModal()"><i class="fas fa-plus"></i> Add</span></div></div>
-                <div class="button-group"><button class="btn btn-danger" onclick="logout()">Logout</button></div></div>`;
-        }
-        
-        function renderStudent() {
-            document.getElementById('profileContainer').innerHTML = `
-                <div class="card"><div class="profile-header"><div class="profile-image-container"><img src="${currentUser.profilePhoto}" class="profile-image"><button class="edit-photo-btn" onclick="openPhotoModal()"><i class="fas fa-camera"></i></button></div>
-                <div class="profile-name">${currentUser.name}</div><div class="profile-role"><i class="fas fa-user-graduate"></i> Student / Parent</div></div>
-                <div class="info-grid"><div class="info-row"><span class="info-label">Email:</span><span class="info-value">${currentUser.email}</span><button class="info-edit-btn" onclick="openEditModal()"><i class="fas fa-edit"></i></button></div>
-                <div class="info-row"><span class="info-label">Phone:</span><span class="info-value">${currentUser.phone}</span><button class="info-edit-btn" onclick="openEditModal()"><i class="fas fa-edit"></i></button></div>
-                <div class="info-row"><span class="info-label">Class:</span><span class="info-value">${currentUser.class || 'Not specified'}</span><button class="info-edit-btn" onclick="openEditModal()"><i class="fas fa-edit"></i></button></div>
-                <div class="info-row"><span class="info-label">Subjects:</span><span class="info-value">${currentUser.subjects || 'Not specified'}</span><button class="info-edit-btn" onclick="openEditModal()"><i class="fas fa-edit"></i></button></div></div>
-                <div class="button-group"><button class="btn btn-danger" onclick="logout()">Logout</button></div></div>`;
-        }
-        
         function openEditModal() {
             document.getElementById('editName').value = currentUser.name || '';
             document.getElementById('editPhone').value = currentUser.phone || '';
             document.getElementById('editEmail').value = currentUser.email || '';
-            document.getElementById('editAddress').value = currentUser.area || '';
-            if(currentUser.role === 'student') {
+            document.getElementById('editAddress').value = currentUser.tutorProfile?.area || '';
+            
+            const hasBoth = currentUser.hasBothRoles || currentUser.role === 'both';
+            
+            if(hasBoth || currentUser.role === 'student') {
                 document.getElementById('editStudentFields').style.display = 'block';
-                document.getElementById('editTutorFields').style.display = 'none';
-                document.getElementById('editClass').value = currentUser.class || 'Class 1-5';
-                document.getElementById('editSubjects').value = currentUser.subjects || '';
-            } else if(currentUser.role === 'tutor') {
+                document.getElementById('editClass').value = currentUser.studentProfile?.class || 'Class 1-5';
+                document.getElementById('editSubjects').value = currentUser.studentProfile?.subjects || '';
+            } else {
                 document.getElementById('editStudentFields').style.display = 'none';
-                document.getElementById('editTutorFields').style.display = 'block';
-                document.getElementById('editQualification').value = currentUser.qualification || '';
-                document.getElementById('editExperience').value = currentUser.experience || '';
             }
+            
+            if(hasBoth || currentUser.role === 'tutor') {
+                document.getElementById('editTutorFields').style.display = 'block';
+                document.getElementById('editQualification').value = currentUser.tutorProfile?.qualification || '';
+                document.getElementById('editExperience').value = currentUser.tutorProfile?.experience || '';
+                document.getElementById('editTutorSubjects').value = (currentUser.tutorProfile?.subjects || []).join(', ');
+            } else {
+                document.getElementById('editTutorFields').style.display = 'none';
+            }
+            
             document.getElementById('editModal').style.display = 'flex';
         }
+        
         function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
         
         document.getElementById('editForm')?.addEventListener('submit', function(e) {
@@ -333,14 +466,24 @@
             currentUser.name = document.getElementById('editName').value;
             currentUser.phone = document.getElementById('editPhone').value;
             currentUser.email = document.getElementById('editEmail').value;
-            currentUser.area = document.getElementById('editAddress').value;
-            if(currentUser.role === 'student') {
-                currentUser.class = document.getElementById('editClass').value;
-                currentUser.subjects = document.getElementById('editSubjects').value;
-            } else if(currentUser.role === 'tutor') {
-                currentUser.qualification = document.getElementById('editQualification').value;
-                currentUser.experience = document.getElementById('editExperience').value;
+            
+            const hasBoth = currentUser.hasBothRoles || currentUser.role === 'both';
+            
+            if(hasBoth || currentUser.role === 'student') {
+                if(!currentUser.studentProfile) currentUser.studentProfile = {};
+                currentUser.studentProfile.class = document.getElementById('editClass').value;
+                currentUser.studentProfile.subjects = document.getElementById('editSubjects').value;
             }
+            
+            if(hasBoth || currentUser.role === 'tutor') {
+                if(!currentUser.tutorProfile) currentUser.tutorProfile = {};
+                currentUser.tutorProfile.qualification = document.getElementById('editQualification').value;
+                currentUser.tutorProfile.experience = document.getElementById('editExperience').value;
+                currentUser.tutorProfile.area = document.getElementById('editAddress').value;
+                const subjectsStr = document.getElementById('editTutorSubjects').value;
+                currentUser.tutorProfile.subjects = subjectsStr ? subjectsStr.split(',').map(s => s.trim()) : [];
+            }
+            
             const index = users.findIndex(u => u.id === currentUser.id);
             if(index !== -1) users[index] = currentUser;
             saveUsers();
@@ -371,9 +514,10 @@
         function addNewSubject() {
             const subject = document.getElementById('newSubject').value.trim();
             if(subject) {
-                if(!currentUser.subjects) currentUser.subjects = [];
-                if(!currentUser.subjects.includes(subject)) {
-                    currentUser.subjects.push(subject);
+                if(!currentUser.tutorProfile) currentUser.tutorProfile = {};
+                if(!currentUser.tutorProfile.subjects) currentUser.tutorProfile.subjects = [];
+                if(!currentUser.tutorProfile.subjects.includes(subject)) {
+                    currentUser.tutorProfile.subjects.push(subject);
                     const index = users.findIndex(u => u.id === currentUser.id);
                     if(index !== -1) users[index] = currentUser;
                     saveUsers();
@@ -385,12 +529,14 @@
             }
         }
         function removeSubject(subject) {
-            currentUser.subjects = currentUser.subjects.filter(s => s !== subject);
-            const index = users.findIndex(u => u.id === currentUser.id);
-            if(index !== -1) users[index] = currentUser;
-            saveUsers();
-            saveCurrentUser(currentUser);
-            renderProfile();
+            if(currentUser.tutorProfile && currentUser.tutorProfile.subjects) {
+                currentUser.tutorProfile.subjects = currentUser.tutorProfile.subjects.filter(s => s !== subject);
+                const index = users.findIndex(u => u.id === currentUser.id);
+                if(index !== -1) users[index] = currentUser;
+                saveUsers();
+                saveCurrentUser(currentUser);
+                renderProfile();
+            }
         }
         
         function logout() { clearCurrentUser(); renderProfile(); showAlert('Logged out!', 'success'); }
