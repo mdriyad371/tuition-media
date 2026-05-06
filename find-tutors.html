@@ -40,6 +40,8 @@
         }
         .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
         .btn-wa { background: #25D366; color: white; text-decoration: none; justify-content: center; margin-top: 15px; width: 100%; }
+        .social-btn { background: #4267B2; color: white; padding: 8px 12px; border-radius: 8px; text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 5px; }
+        .social-btn-linkedin { background: #0077B5; }
         
         .filter-section {
             background: white; border-radius: 15px; padding: 20px;
@@ -53,11 +55,12 @@
         
         .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
         .badge-success { background: #d4edda; color: #155724; }
+        .badge-info { background: #d1ecf1; color: #0c5460; }
         
-        .search-input {
-            width: 100%; padding: 12px; border: 1px solid #ddd;
-            border-radius: 10px; font-size: 14px; margin-top: 10px;
-        }
+        .search-input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 14px; margin-top: 10px; }
+        .social-links { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+        .hidden-contact { background: #f0f0f0; padding: 10px; border-radius: 8px; text-align: center; color: #666; font-style: italic; margin-top: 10px; }
+        .admin-contact { background: #fff3cd; padding: 10px; border-radius: 8px; margin-top: 10px; border-left: 3px solid #ffc107; }
         
         @media (max-width: 768px) { .page { padding: 15px; } }
     </style>
@@ -88,9 +91,9 @@
         let currentUser = null;
         
         let tutors = [
-            { id:1, name:"শাহিদুল ইসলাম", email:"shahidul@example.com", phone:"01712345678", role:"tutor", profilePhoto:"https://randomuser.me/api/portraits/men/1.jpg", qualification:"M.Sc in Mathematics, DU\n৫ বছর অভিজ্ঞতা", subjects:["Mathematics","Physics"], area:"ধানমন্ডি", rating:4.8, experience:"৫ বছর" },
-            { id:2, name:"ফাতেমা বেগম", email:"fatema@example.com", phone:"01812345678", role:"tutor", profilePhoto:"https://randomuser.me/api/portraits/women/2.jpg", qualification:"B.A in English, JU\n৩ বছর অভিজ্ঞতা", subjects:["English","Literature"], area:"গুলশান", rating:4.5, experience:"৩ বছর" },
-            { id:3, name:"রফিক উদ্দিন", email:"rafiq@example.com", phone:"01912345678", role:"tutor", profilePhoto:"https://randomuser.me/api/portraits/men/3.jpg", qualification:"B.Sc in CSE, BUET\n২ বছর অভিজ্ঞতা", subjects:["Programming","ICT"], area:"মিরপুর", rating:4.9, experience:"২ বছর" }
+            { id:1, name:"শাহিদুল ইসলাম", email:"shahidul@example.com", phone:"01712345678", role:"tutor", profilePhoto:"https://randomuser.me/api/portraits/men/1.jpg", qualification:"M.Sc in Mathematics, DU\n৫ বছর অভিজ্ঞতা\nউচ্চতর গণিতে বিশেষজ্ঞ", subjects:["Mathematics","Physics"], area:"ধানমন্ডি", rating:4.8, experience:"৫ বছর", facebook:"https://facebook.com/shahidul", linkedin:"https://linkedin.com/in/shahidul", whatsapp:"01712345678" },
+            { id:2, name:"ফাতেমা বেগম", email:"fatema@example.com", phone:"01812345678", role:"tutor", profilePhoto:"https://randomuser.me/api/portraits/women/2.jpg", qualification:"B.A in English, JU\n৩ বছর অভিজ্ঞতা\nIELTS 8.0", subjects:["English","Literature"], area:"গুলশান", rating:4.5, experience:"৩ বছর", facebook:"https://facebook.com/fatema", linkedin:"https://linkedin.com/in/fatema", whatsapp:"01812345678" },
+            { id:3, name:"রফিক উদ্দিন", email:"rafiq@example.com", phone:"01912345678", role:"tutor", profilePhoto:"https://randomuser.me/api/portraits/men/3.jpg", qualification:"B.Sc in CSE, BUET\n২ বছর অভিজ্ঞতা\nপ্রোগ্রামিং বিশেষজ্ঞ", subjects:["Programming","ICT"], area:"মিরপুর", rating:4.9, experience:"২ বছর", facebook:"https://facebook.com/rafiq", linkedin:"https://linkedin.com/in/rafiq", whatsapp:"01912345678" }
         ];
         
         function checkLogin() { const saved = localStorage.getItem('currentUser'); if (saved) currentUser = JSON.parse(saved); }
@@ -110,22 +113,49 @@
             
             const html = filtered.map(t => `
                 <div class="card">
-                    <div style="display:flex; gap:15px;">
+                    <div style="display:flex; gap:15px; flex-wrap:wrap;">
                         <img src="${t.profilePhoto}" style="width:80px; height:80px; border-radius:50%; object-fit:cover;">
-                        <div style="flex:1;"><div style="font-weight:bold; font-size:18px;">${t.name}</div>
-                        <div>⭐ ${t.rating} | ${t.experience} অভিজ্ঞতা</div><div>📍 ${t.area}</div></div>
+                        <div style="flex:1;">
+                            <div style="font-weight:bold; font-size:18px;">${t.name}</div>
+                            <div>⭐ ${t.rating} | ${t.experience} অভিজ্ঞতা</div>
+                            <div>📍 ${t.area}</div>
+                            <div class="social-links">
+                                ${t.facebook ? `<a href="${t.facebook}" target="_blank" class="social-btn"><i class="fab fa-facebook"></i> Facebook</a>` : ''}
+                                ${t.linkedin ? `<a href="${t.linkedin}" target="_blank" class="social-btn social-btn-linkedin"><i class="fab fa-linkedin"></i> LinkedIn</a>` : ''}
+                            </div>
+                        </div>
                     </div>
-                    <div style="margin-top:15px;"><span class="badge badge-success">📚 ${t.subjects.join(', ')}</span></div>
+                    <div style="margin-top:15px;">
+                        <span class="badge badge-success">📚 ${t.subjects.join(', ')}</span>
+                        <span class="badge badge-info">📍 ${t.area}</span>
+                    </div>
                     <details><summary style="cursor:pointer; color:#667eea; margin-top:10px;">যোগ্যতা বিস্তারিত দেখুন</summary>
                     <div style="margin-top:10px; padding:10px; background:#f8f9fa; border-radius:10px; white-space:pre-line;">${t.qualification}</div></details>
-                    ${currentUser?.role === 'student' ? `
-                        <a href="https://wa.me/${ADMIN_WHATSAPP}?text=%F0%9F%91%A8%F0%9F%8F%AB%20টিউটর:%20${t.name}%0A👤%20আমি%20Sir/Madam%20${t.name}%20কে%20টিউটর%20হিসেবে%20নিয়োগ%20করতে%20চাই।%0A%0A👤%20আমার%20নাম:%20${currentUser.name}%0A📞%20আমার%20ফোন:%20${currentUser.phone}%0A%0Aঅনুগ্রহপূর্বক%20যোগাযোগ%20করুন।" class="btn btn-wa" target="_blank"><i class="fab fa-whatsapp"></i> Sir/Madam ${t.name} কে টিউটর হিসেবে নিয়োগ করতে চাই</a>
-                    ` : ''}
+                    
+                    ${currentUser?.role === 'admin' ? `
+                        <div class="admin-contact">
+                            <strong><i class="fas fa-lock"></i> Admin Only - Contact Info:</strong><br>
+                            📞 Phone: ${t.phone}<br>
+                            📧 Email: ${t.email}<br>
+                            <i class="fab fa-whatsapp"></i> WhatsApp: ${t.whatsapp || t.phone}<br>
+                            <button class="btn btn-primary" style="margin-top:10px;" onclick="copyToClipboard('${t.phone}')"><i class="fas fa-copy"></i> Copy Phone</button>
+                        </div>
+                    ` : currentUser?.role === 'student' ? `
+                        <div class="hidden-contact">
+                            <i class="fas fa-lock"></i> Contact information is hidden. 
+                            <a href="https://wa.me/${ADMIN_WHATSAPP}?text=আমি%20${t.name}%20Sir/Madam%20কে%20টিউটর%20হিসেবে%20নিয়োগ%20করতে%20চাই।%0A👨‍🏫%20টিউটর:%20${t.name}%0A👤%20আমার%20নাম:%20${currentUser.name}%0A📞%20আমার%20ফোন:%20${currentUser.phone}%0A📚%20সাবজেক্ট:%20${t.subjects.join(', ')}" class="btn btn-wa" target="_blank">এডমিনের মাধ্যমে টিউটর নিয়োগ করুন</a>
+                        </div>
+                    ` : `
+                        <div class="hidden-contact">
+                            <i class="fas fa-lock"></i> Please login as student to hire this tutor
+                        </div>
+                    `}
                 </div>
             `).join('');
             document.getElementById('tutorsList').innerHTML = html || '<p>No tutors found</p>';
         }
         
+        function copyToClipboard(text) { navigator.clipboard.writeText(text); alert('Phone number copied!'); }
         function filterTutors() { renderTutors(); }
         document.getElementById('searchTutor')?.addEventListener('keyup', filterTutors);
         
