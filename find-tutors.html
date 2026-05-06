@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Tuition Media - Find Tutors</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; padding-bottom: 70px; }
+        
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: white; display: flex; justify-content: space-around;
+            padding: 10px 0; box-shadow: 0 -2px 15px rgba(0,0,0,0.1);
+            z-index: 1000; border-top: 1px solid #e0e0e0;
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 5px; padding: 5px 15px; border-radius: 10px;
+            text-decoration: none; color: #666;
+        }
+        .nav-item.active { color: #667eea; }
+        .nav-icon { font-size: 24px; }
+        .nav-label { font-size: 12px; font-weight: 500; }
+        
+        .page { padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .page-header { margin-bottom: 20px; }
+        .page-header h1 { font-size: 24px; color: #333; }
+        
+        .card {
+            background: white; border-radius: 15px; padding: 20px;
+            margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .btn {
+            padding: 12px 24px; border: none; border-radius: 10px;
+            cursor: pointer; font-size: 14px; font-weight: 600;
+            transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-wa { background: #25D366; color: white; text-decoration: none; justify-content: center; margin-top: 15px; width: 100%; }
+        
+        .filter-section {
+            background: white; border-radius: 15px; padding: 20px;
+            margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .filter-group { margin-bottom: 15px; }
+        .filter-group label { display: block; margin-bottom: 8px; font-weight: 600; }
+        .filter-group input, .filter-group select {
+            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;
+        }
+        
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .badge-success { background: #d4edda; color: #155724; }
+        .badge-warning { background: #fff3cd; color: #856404; }
+        
+        .search-input {
+            width: 100%; padding: 12px; border: 1px solid #ddd;
+            border-radius: 10px; font-size: 14px; margin-top: 10px;
+        }
+        
+        @media (max-width: 768px) { .page { padding: 15px; } }
+    </style>
+</head>
+<body>
+    <div class="bottom-nav">
+        <a href="index.html" class="nav-item"><div class="nav-icon">🏠</div><div class="nav-label">Home</div></a>
+        <a href="find-tutors.html" class="nav-item active"><div class="nav-icon">🔍</div><div class="nav-label">Find Tutors</div></a>
+        <a href="tuition-jobs.html" class="nav-item"><div class="nav-icon">💼</div><div class="nav-label">Tuition Jobs</div></a>
+        <a href="profile.html" class="nav-item"><div class="nav-icon">👤</div><div class="nav-label">Profile</div></a>
+    </div>
+
+    <div class="page">
+        <div class="page-header"><h1>🔍 Find Tutors</h1><input type="text" id="searchTutor" class="search-input" placeholder="Search by name, subject, or area..."></div>
+        
+        <div class="filter-section">
+            <div class="filter-title"><strong>🔍 Filter Tutors</strong></div>
+            <div class="filter-group"><label>📍 এলাকা</label><select id="filterArea"><option value="">সব এলাকা</option><option>ধানমন্ডি</option><option>গুলশান</option><option>উত্তরা</option><option>মিরপুর</option></select></div>
+            <div class="filter-group"><label>📚 সাবজেক্ট</label><select id="filterSubject"><option value="">সব সাবজেক্ট</option><option>Mathematics</option><option>Physics</option><option>English</option><option>Programming</option></select></div>
+            <button class="btn btn-primary" onclick="filterTutors()" style="width:100%"><i class="fas fa-search"></i> Apply Filters</button>
+        </div>
+        
+        <div id="tutorsList"></div>
+    </div>
+
+    <script>
+        const ADMIN_WHATSAPP = "88017091303712";
+        let currentUser = null;
+        
+        let tutors = [
+            { id:1, name:"শাহিদুল ইসলাম", email:"shahidul@example.com", phone:"01712345678", role:"tutor", profilePhoto:"https://randomuser.me/api/portraits/men/1.jpg", qualification:"M.Sc in Mathematics, DU\n৫ বছর অভিজ্ঞতা", subjects:["Mathematics","Physics"], area:"ধানমন্ডি", rating:4.8, experience:"৫ বছর" },
+            { id:2, name:"ফাতেমা বেগম", email:"fatema@example.com", phone:"01812345678", role:"tutor", profilePhoto:"https://randomuser.me/api/portraits/women/2.jpg", qualification:"B.A in English, JU\n৩ বছর অভিজ্ঞতা", subjects:["English","Literature"], area:"গুলশান", rating:4.5, experience:"৩ বছর" },
+            { id:3, name:"রফিক উদ্দিন", email:"rafiq@example.com", phone:"01912345678", role:"tutor", profilePhoto:"https://randomuser.me/api/portraits/men/3.jpg", qualification:"B.Sc in CSE, BUET\n২ বছর অভিজ্ঞতা", subjects:["Programming","ICT"], area:"মিরপুর", rating:4.9, experience:"২ বছর" },
+            { id:4, name:"সাদিয়া রহমান", email:"sadia@example.com", phone:"01612345678", role:"tutor", profilePhoto:"https://randomuser.me/api/portraits/women/4.jpg", qualification:"B.Sc in Chemistry, DU\n৪ বছর অভিজ্ঞতা", subjects:["Chemistry","Biology"], area:"উত্তরা", rating:4.7, experience:"৪ বছর" }
+        ];
+        
+        function checkLogin() { const saved = localStorage.getItem('currentUser'); if (saved) currentUser = JSON.parse(saved); }
+        
+        function renderTutors() {
+            let filtered = [...tutors];
+            const search = document.getElementById('searchTutor')?.value.toLowerCase() || '';
+            const area = document.getElementById('filterArea')?.value || '';
+            const subject = document.getElementById('filterSubject')?.value || '';
+            
+            filtered = filtered.filter(t => {
+                if(search && !t.name.toLowerCase().includes(search) && !t.subjects.some(s=>s.toLowerCase().includes(search)) && !t.area.toLowerCase().includes(search)) return false;
+                if(area && !t.area.includes(area)) return false;
+                if(subject && !t.subjects.includes(subject)) return false;
+                return true;
+            });
+            
+            const html = filtered.map(t => `
+                <div class="card">
+                    <div style="display:flex; gap:15px;">
+                        <img src="${t.profilePhoto}" style="width:80px; height:80px; border-radius:50%; object-fit:cover;">
+                        <div style="flex:1;"><div style="font-weight:bold; font-size:18px;">${t.name}</div>
+                        <div>⭐ ${t.rating} | ${t.experience} অভিজ্ঞতা</div><div>📍 ${t.area}</div></div>
+                    </div>
+                    <div style="margin-top:15px;"><span class="badge badge-success">📚 ${t.subjects.join(', ')}</span></div>
+                    <details><summary style="cursor:pointer; color:#667eea; margin-top:10px;">যোগ্যতা বিস্তারিত দেখুন</summary>
+                    <div style="margin-top:10px; padding:10px; background:#f8f9fa; border-radius:10px; white-space:pre-line;">${t.qualification}</div></details>
+                    ${currentUser?.role === 'student' ? `
+                        <a href="https://wa.me/${ADMIN_WHATSAPP}?text=আমি%20${t.name}%20স্যারকে%20টিউটর%20হিসেবে%20নিয়োগ%20করতে%20চাই।%0A👨‍🏫%20টিউটর:%20${t.name}%0A👤%20আমার%20নাম:%20${currentUser.name}%0A📞%20আমার%20ফোন:%20${currentUser.phone}" class="btn btn-wa" target="_blank"><i class="fab fa-whatsapp"></i> এডমিনের মাধ্যমে টিউটর নিয়োগ করুন</a>
+                    ` : ''}
+                </div>
+            `).join('');
+            document.getElementById('tutorsList').innerHTML = html || '<p>No tutors found</p>';
+        }
+        
+        function filterTutors() { renderTutors(); }
+        document.getElementById('searchTutor')?.addEventListener('keyup', filterTutors);
+        
+        checkLogin();
+        renderTutors();
+    </script>
+</body>
+</html>
