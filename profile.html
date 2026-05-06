@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Tuition Media - Profile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding-bottom: 70px; }
+        
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: white; display: flex; justify-content: space-around;
+            padding: 10px 0; box-shadow: 0 -2px 15px rgba(0,0,0,0.1);
+            z-index: 1000; border-top: 1px solid #e0e0e0;
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 5px; padding: 5px 15px; border-radius: 10px;
+            text-decoration: none; color: #666;
+        }
+        .nav-item.active { color: #667eea; }
+        .nav-icon { font-size: 24px; }
+        .nav-label { font-size: 12px; font-weight: 500; }
+        
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        
+        .card {
+            background: white; border-radius: 20px; padding: 25px;
+            margin-bottom: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .profile-header { display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; }
+        .profile-image-container { position: relative; margin-bottom: 15px; }
+        .profile-image { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 4px solid #667eea; }
+        .edit-photo-btn {
+            position: absolute; bottom: 5px; right: 5px; background: #667eea; color: white;
+            border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer;
+            font-size: 18px; transition: all 0.3s;
+        }
+        .profile-name { font-size: 28px; font-weight: bold; color: #333; }
+        .profile-role { color: #667eea; margin: 5px 0; font-size: 16px; }
+        
+        .btn {
+            padding: 12px 24px; border: none; border-radius: 10px;
+            cursor: pointer; font-size: 14px; font-weight: 600;
+            transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-outline { background: transparent; border: 2px solid #667eea; color: #667eea; }
+        .btn-danger { background: #ff4757; color: white; }
+        .btn-warning { background: #ffc107; color: #333; }
+        
+        .info-grid { display: grid; gap: 15px; margin-top: 20px; }
+        .info-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8f9fa; border-radius: 10px; flex-wrap: wrap; gap: 10px; }
+        .info-label { font-weight: 600; color: #666; min-width: 120px; }
+        .info-value { color: #333; flex: 1; }
+        .info-edit-btn { background: none; border: none; color: #667eea; cursor: pointer; font-size: 16px; padding: 5px 10px; border-radius: 5px; }
+        
+        .badge { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin: 3px; }
+        .badge-success { background: #d4edda; color: #155724; }
+        .badge-info { background: #d1ecf1; color: #0c5460; }
+        
+        .subjects-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .subject-tag { background: #e3f2fd; color: #1976d2; padding: 5px 12px; border-radius: 20px; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; }
+        .subject-tag button { background: none; border: none; color: #1976d2; cursor: pointer; }
+        .add-subject { background: #f0f0f0; border: 1px dashed #ccc; cursor: pointer; }
+        
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: white; border-radius: 20px; padding: 25px;
+            max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;
+        }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;
+        }
+        
+        .button-group { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+        .admin-panel { background: #fff3cd; padding: 15px; border-radius: 10px; margin-top: 20px; }
+        
+        @media (max-width: 768px) { .container { padding: 10px; } .info-row { flex-direction: column; align-items: flex-start; } .button-group { flex-direction: column; } .btn { width: 100%; justify-content: center; } }
+    </style>
+</head>
+<body>
+    <div class="bottom-nav">
+        <a href="index.html" class="nav-item"><div class="nav-icon">🏠</div><div class="nav-label">Home</div></a>
+        <a href="find-tutors.html" class="nav-item"><div class="nav-icon">🔍</div><div class="nav-label">Find Tutors</div></a>
+        <a href="tuition-jobs.html" class="nav-item"><div class="nav-icon">💼</div><div class="nav-label">Tuition Jobs</div></a>
+        <a href="profile.html" class="nav-item active"><div class="nav-icon">👤</div><div class="nav-label">Profile</div></a>
+    </div>
+
+    <div class="container" id="profileContainer"></div>
+
+    <!-- Edit Profile Modal -->
+    <div id="editModal" class="modal"><div class="modal-content"><h2 style="margin-bottom:20px;">✏️ Edit Profile</h2>
+        <form id="editForm"><div class="form-group"><label>Full Name</label><input type="text" id="editName" required></div>
+        <div class="form-group"><label>Phone</label><input type="tel" id="editPhone" required></div>
+        <div class="form-group"><label>Email</label><input type="email" id="editEmail" required></div>
+        <div class="form-group"><label>Address/Area</label><input type="text" id="editAddress"></div>
+        <div id="studentFields" style="display:none;"><div class="form-group"><label>Class</label><select id="editClass"><option>Class 1-5</option><option>Class 6-8</option><option>Class 9-10</option><option>HSC</option><option>University</option></select></div>
+        <div class="form-group"><label>Subjects</label><input type="text" id="editSubjects" placeholder="e.g., Math, Physics"></div></div>
+        <div id="tutorFields" style="display:none;"><div class="form-group"><label>Qualification</label><textarea id="editQualification" rows="4"></textarea></div>
+        <div class="form-group"><label>Experience</label><input type="text" id="editExperience"></div></div>
+        <div class="button-group"><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save</button><button type="button" class="btn btn-outline" onclick="closeEditModal()">Cancel</button></div></form>
+    </div></div>
+
+    <!-- Photo Modal -->
+    <div id="photoModal" class="modal"><div class="modal-content"><h2 style="margin-bottom:20px;">📸 Update Photo</h2>
+        <div class="form-group"><label>Photo URL</label><input type="text" id="photoUrl" placeholder="Enter image URL"></div>
+        <div class="form-group"><label>Default Avatars</label><div style="display:flex; gap:10px; flex-wrap:wrap;"><button type="button" class="btn btn-outline" onclick="setPhoto('https://randomuser.me/api/portraits/men/1.jpg')">👨 Male 1</button><button type="button" class="btn btn-outline" onclick="setPhoto('https://randomuser.me/api/portraits/women/2.jpg')">👩 Female 1</button><button type="button" class="btn btn-outline" onclick="setPhoto('https://randomuser.me/api/portraits/men/3.jpg')">👨 Male 2</button><button type="button" class="btn btn-outline" onclick="setPhoto('https://randomuser.me/api/portraits/women/4.jpg')">👩 Female 2</button></div></div>
+        <div class="button-group"><button class="btn btn-primary" onclick="updatePhoto()">Update</button><button class="btn btn-outline" onclick="closePhotoModal()">Cancel</button></div>
+    </div></div>
+
+    <!-- Add Subject Modal -->
+    <div id="subjectModal" class="modal"><div class="modal-content"><h2 style="margin-bottom:20px;">➕ Add Subject</h2>
+        <div class="form-group"><label>Subject Name</label><input type="text" id="newSubject" placeholder="e.g., Mathematics"></div>
+        <div class="button-group"><button class="btn btn-primary" onclick="addSubject()">Add</button><button class="btn btn-outline" onclick="closeSubjectModal()">Cancel</button></div>
+    </div></div>
+
+    <script>
+        let currentUser = null;
+        let tutors = [];
+        let tuitionJobs = [];
+        
+        function initData() {
+            tutors = [
+                { id:1, name:"শাহিদুল ইসলাম", email:"shahidul@example.com", phone:"01712345678", role:"tutor", profilePhoto:"https://randomuser.me/api/portraits/men/1.jpg", qualification:"M.Sc in Mathematics, DU\n৫ বছর অভিজ্ঞতা", subjects:["Mathematics","Physics"], area:"ধানমন্ডি", rating:4.8, experience:"৫ বছর" },
+                { id:2, name:"ফাতেমা বেগম", email:"fatema@example.com", phone:"01812345678", role:"tutor", profilePhoto:"https://randomuser.me/api/portraits/women/2.jpg", qualification:"B.A in English, JU\n৩ বছর অভিজ্ঞতা", subjects:["English","Literature"], area:"গুলশান", rating:4.5, experience:"৩ বছর" }
+            ];
+            tuitionJobs = [
+                { id:1, subject:"গণিত", class:"Class 9-10", area:"ধানমন্ডি", salary:8000, studentName:"রহমান পরিবার", studentPhone:"01711223344" }
+            ];
+            const saved = localStorage.getItem('currentUser');
+            if(saved) currentUser = JSON.parse(saved);
+        }
+        
+        function saveUser(user) { localStorage.setItem('currentUser', JSON.stringify(user)); currentUser = user; }
+        function clearUser() { localStorage.removeItem('currentUser'); currentUser = null; }
+        
+        function renderProfile() {
+            const container = document.getElementById('profileContainer');
+            if(!currentUser) {
+                container.innerHTML = `<div class="card" style="text-align:center;"><i class="fas fa-lock" style="font-size:60px; color:#667eea;"></i><h2>Please Login</h2><div class="button-group" style="justify-content:center;"><button class="btn btn-primary" onclick="showLogin()"><i class="fas fa-sign-in-alt"></i> Login</button><button class="btn btn-outline" onclick="showRegister()"><i class="fas fa-user-plus"></i> Register</button></div></div>`;
+                return;
+            }
+            
+            if(currentUser.role === 'admin') renderAdmin();
+            else if(currentUser.role === 'tutor') renderTutor();
+            else if(currentUser.role === 'student') renderStudent();
+        }
+        
+        function renderAdmin() {
+            document.getElementById('profileContainer').innerHTML = `
+                <div class="card"><div class="profile-header"><div class="profile-image-container"><img src="${currentUser.profilePhoto || 'https://randomuser.me/api/portraits/men/99.jpg'}" class="profile-image" id="profileImage"><button class="edit-photo-btn" onclick="openPhotoModal()"><i class="fas fa-camera"></i></button></div>
+                <div class="profile-name">${currentUser.name}</div><div class="profile-role"><i class="fas fa-shield-alt"></i> Administrator</div></div>
+                <div class="info-grid"><div class="info-row"><span class="info-label"><i class="fas fa-envelope"></i> Email:</span><span class="info-value">${currentUser.email}</span><button class="info-edit-btn" onclick="openEditModal()"><i class="fas fa-edit"></i></button></div>
+                <div class="info-row"><span class="info-label"><i class="fas fa-phone"></i> Phone:</span><span class="info-value">${currentUser.phone || 'Not provided'}</span><button class="info-edit-btn" onclick="openEditModal()"><i class="fas fa-edit"></i></button></div>
+                <div class="info-row"><span class="info-label"><i class="fas fa-map-marker-alt"></i> Address:</span><span class="info-value">${currentUser.address || 'Not provided'}</span><button class="info-edit-btn" onclick="openEditModal()"><i class="fas fa-edit"></i></button></div></div>
+                <div class="admin-panel"><h3>📊 Dashboard</h3><p>Total Users: ${tutors.length+1}</p><p>Total Jobs: ${tuitionJobs.length}</p></div>
+                <div class="button-group"><button class="btn btn-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button></div></div>`;
+        }
+        
+        function renderTutor() {
+            document.getElementById('profileContainer').innerHTML = `
+                <div class="card"><div class="profile-header"><div class="profile-image-container"><img src="${currentUser.profilePhoto || 'https://via.placeholder.com/150'}" class="profile-image"><button class="edit-photo-btn" onclick="openPhotoModal()"><i class="fas fa-camera"></i></button></div>
+                <div class="profile-name">${currentUser.name}</div><div class="profile-role"><i class="fas fa-chalkboard-teacher"></i> Professional Tutor</div><div>⭐ ${currentUser.rating || '4.5'} (${currentUser.experience || '0'} years)</div></div>
+                <div class="info-grid"><div class="info-row"><span class="info-label"><i class="fas fa-envelope"></i> Email:</span><span class="info-value">${currentUser.email}</span><button class="info-edit-btn" onclick="openEditModal()"><i class="fas fa-edit"></i></button></div>
+                <div class="info-row"><span class="info-label"><i class="fas fa-phone"></i> Phone:</span><span class="info-value">${currentUser.phone}</span><button class="info-edit-btn" onclick="openEditModal()"><i class="fas fa-edit"></i></button></div>
+                <div class="info-row"><span class="info-label"><i class="fas fa-map-marker-alt"></i> Area:</span><span class="info-value">${currentUser.area || 'Not provided'}</span><button class="info-edit-btn" onclick="openEditModal()"><i class="fas fa-edit"></i></button></div></div>
+                <div><h3><i class="fas fa-certificate"></i> Qualification</h3><div style="padding:15px; background:#f8f9fa; border-radius:10px; white-space:pre-line;">${currentUser.qualification || 'Not added'}</div><button class="btn btn-outline" style="margin-top:10px;" onclick="openEditModal()">Edit Qualification</button></div>
+                <div style="margin-top:20px;"><h3><i class="fas fa-book"></i> Teaching Subjects</h3><div class="subjects-container" id="subjectsContainer">${(currentUser.subjects || []).map(s => `<span class="subject-tag">${s}<button onclick="removeSubject('${s}')"><i class="fas fa-times"></i></button></span>`).join('')}<span class="subject-tag add-subject" onclick="openSubjectModal()"><i class="fas fa-plus"></i> Add Subject</span></div></div>
+                <div class="button-group" style="margin-top:20px;"><button class="btn btn-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button></div></div>`;
+        }
+        
+        function renderStudent() {
+            document.getElementById('profileContainer').innerHTML = `
+                <div class="card"><div class="profile-header"><div class="profile-image-container"><img src="${currentUser.profilePhoto || 'https://via.placeholder.com/150'}" class="profile-image"><button class="edit-photo-btn" onclick="openPhotoModal()"><i class="fas fa-camera"></i></button></div>
+                <div class="profile-name">${currentUser.name}</div><div class="profile-role"><i class="fas fa-user-graduate"></i> Student / Parent</div></div>
+                <div class="info-grid"><div class="info-row"><span class="info-label"><i class="fas fa-envelope"></i> Email:</span><span class="info-value">${currentUser.email}</span><button class="info-edit-btn" onclick="openEditModal()"><i class="fas fa-edit"></i></button></div>
+                <div class="info-row"><span class="info-label"><i class="fas fa-phone"></i> Phone:</span><span class="info-value">${currentUser.phone}</span><button class="info-edit-btn" onclick="openEditModal()"><i class="fas fa-edit"></i></button></div>
+                <div class="info-row"><span class="info-label"><i class="fas fa-chalkboard"></i> Class:</span><span class="info-value">${currentUser.class || 'Not specified'}</span><button class="info-edit-btn" onclick="openEditModal()"><i class="fas fa-edit"></i></button></div>
+                <div class="info-row"><span class="info-label"><i class="fas fa-book-open"></i> Subjects:</span><span class="info-value">${currentUser.subjects || 'Not specified'}</span><button class="info-edit-btn" onclick="openEditModal()"><i class="fas fa-edit"></i></button></div></div>
+                <div class="button-group"><button class="btn btn-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button></div></div>`;
+        }
+        
+        function openEditModal() {
+            document.getElementById('editName').value = currentUser.name || '';
+            document.getElementById('editPhone').value = currentUser.phone || '';
+            document.getElementById('editEmail').value = currentUser.email || '';
+            document.getElementById('editAddress').value = currentUser.area || currentUser.address || '';
+            
+            if(currentUser.role === 'student') {
+                document.getElementById('studentFields').style.display = 'block';
+                document.getElementById('tutorFields').style.display = 'none';
+                document.getElementById('editClass').value = currentUser.class || 'Class 1-5';
+                document.getElementById('editSubjects').value = currentUser.subjects || '';
+            } else if(currentUser.role === 'tutor') {
+                document.getElementById('studentFields').style.display = 'none';
+                document.getElementById('tutorFields').style.display = 'block';
+                document.getElementById('editQualification').value = currentUser.qualification || '';
+                document.getElementById('editExperience').value = currentUser.experience || '';
+            } else {
+                document.getElementById('studentFields').style.display = 'none';
+                document.getElementById('tutorFields').style.display = 'none';
+            }
+            document.getElementById('editModal').style.display = 'flex';
+        }
+        
+        function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
+        
+        document.getElementById('editForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            currentUser.name = document.getElementById('editName').value;
+            currentUser.phone = document.getElementById('editPhone').value;
+            currentUser.email = document.getElementById('editEmail').value;
+            currentUser.area = document.getElementById('editAddress').value;
+            if(currentUser.role === 'student') {
+                currentUser.class = document.getElementById('editClass').value;
+                currentUser.subjects = document.getElementById('editSubjects').value;
+            } else if(currentUser.role === 'tutor') {
+                currentUser.qualification = document.getElementById('editQualification').value;
+                currentUser.experience = document.getElementById('editExperience').value;
+            }
+            saveUser(currentUser);
+            closeEditModal();
+            renderProfile();
+            alert('Profile updated!');
+        });
+        
+        function openPhotoModal() { document.getElementById('photoModal').style.display = 'flex'; }
+        function closePhotoModal() { document.getElementById('photoModal').style.display = 'none'; }
+        function setPhoto(url) { document.getElementById('photoUrl').value = url; }
+        function updatePhoto() {
+            const url = document.getElementById('photoUrl').value;
+            if(url) { currentUser.profilePhoto = url; saveUser(currentUser); closePhotoModal(); renderProfile(); alert('Photo updated!'); }
+            else alert('Enter URL');
+        }
+        
+        function openSubjectModal() { document.getElementById('subjectModal').style.display = 'flex'; }
+        function closeSubjectModal() { document.getElementById('subjectModal').style.display = 'none'; document.getElementById('newSubject').value = ''; }
+        function addSubject() {
+            const subject = document.getElementById('newSubject').value.trim();
+            if(subject) {
+                if(!currentUser.subjects) currentUser.subjects = [];
+                currentUser.subjects.push(subject);
+                saveUser(currentUser);
+                closeSubjectModal();
+                renderProfile();
+                alert(`Added: ${subject}`);
+            }
+        }
+        function removeSubject(subject) {
+            currentUser.subjects = currentUser.subjects.filter(s => s !== subject);
+            saveUser(currentUser);
+            renderProfile();
+        }
+        
+        function logout() { clearUser(); renderProfile(); alert('Logged out!'); }
+        
+        function showLogin() {
+            const email = prompt('Enter email (admin@tuition.com for admin, or any email):');
+            if(email === 'admin@tuition.com') {
+                currentUser = { id:999, name:'Admin', email:'admin@tuition.com', phone:'88017091303712', role:'admin', profilePhoto:'https://randomuser.me/api/portraits/men/99.jpg' };
+            } else {
+                const existing = tutors.find(t => t.email === email);
+                if(existing) currentUser = existing;
+                else currentUser = { id:Date.now(), name:prompt('Name:'), email:email, phone:prompt('Phone:'), role:'student', profilePhoto:'https://via.placeholder.com/150' };
+            }
+            saveUser(currentUser);
+            renderProfile();
+            alert('Login successful!');
+        }
+        
+        function showRegister() {
+            const name = prompt('Full name:');
+            const email = prompt('Email:');
+            const phone = prompt('Phone:');
+            const role = prompt('Role (student/tutor):', 'student');
+            if(name && email && phone) {
+                currentUser = { id:Date.now(), name, email, phone, role, profilePhoto:'https://via.placeholder.com/150' };
+                saveUser(currentUser);
+                renderProfile();
+                alert('Registration successful!');
+            }
+        }
+        
+        window.onclick = function(e) { if(e.target.classList.contains('modal')) e.target.style.display = 'none'; }
+        
+        initData();
+        renderProfile();
+    </script>
+</body>
+</html>
