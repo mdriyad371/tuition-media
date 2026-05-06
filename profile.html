@@ -97,6 +97,31 @@
         }
         .role-buttons { display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap; }
         
+        .role-switch-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .role-switch-buttons { display: flex; gap: 15px; justify-content: center; margin-top: 15px; }
+        .role-switch-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .role-switch-btn.active {
+            background: white;
+            color: #667eea;
+        }
+        .role-switch-btn:hover { transform: scale(1.05); }
+        
         .auth-tabs { display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid #e0e0e0; }
         .auth-tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; background: none; border: none; font-size: 16px; font-weight: 600; color: #666; }
         .auth-tab.active { color: #667eea; border-bottom: 2px solid #667eea; }
@@ -104,6 +129,14 @@
         .alert { padding: 12px; border-radius: 10px; margin-bottom: 20px; display: none; }
         .alert-success { background: #d4edda; color: #155724; }
         .alert-error { background: #f8d7da; color: #721c24; }
+        
+        .current-acting-role {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
         
         @media (max-width: 768px) { .container { padding: 10px; } .info-row { flex-direction: column; align-items: flex-start; } .button-group { flex-direction: column; } .btn { width: 100%; justify-content: center; } }
     </style>
@@ -134,7 +167,7 @@
                 <div class="form-group"><label>Email</label><input type="email" id="loginEmail" placeholder="Enter your email"></div>
                 <div class="form-group"><label>Password</label><input type="password" id="loginPassword" placeholder="Enter your password"></div>
                 <button class="btn btn-primary" style="width:100%" onclick="login()">Login</button>
-                <p style="text-align:center; margin-top:15px; color:#666;">Demo: admin@tuition.com / admin123</p>
+                <p style="text-align:center; margin-top:15px; color:#666;">Demo: student@example.com / 123456 (Both Roles)</p>
             </div>
             <div id="registerForm" style="display:none;">
                 <div class="form-group"><label>Full Name</label><input type="text" id="regName"></div>
@@ -195,7 +228,7 @@
             else {
                 users = [
                     { id:1, name:"Admin", email:"admin@tuition.com", phone:"88017091303712", password:"admin123", role:"admin", profilePhoto:"https://randomuser.me/api/portraits/men/99.jpg" },
-                    { id:2, name:"রহমান", email:"student@example.com", phone:"01712345678", password:"123456", role:"student", hasBothRoles:true, 
+                    { id:2, name:"রহমান", email:"student@example.com", phone:"01712345678", password:"123456", role:"both", hasBothRoles:true, 
                       studentProfile: { class:"Class 9-10", subjects:"Mathematics, Physics" },
                       tutorProfile: { qualification:"B.Sc in CSE", experience:"2 years", subjects:["Programming","ICT"], area:"Dhanmondi" },
                       profilePhoto:"https://randomuser.me/api/portraits/men/1.jpg" }
@@ -252,6 +285,10 @@
             const user = users.find(u => u.email === email && u.password === password);
             if(user) {
                 saveCurrentUser(user);
+                // Set default active role
+                if(user.hasBothRoles && !localStorage.getItem('activeRole')) {
+                    localStorage.setItem('activeRole', 'student');
+                }
                 closeAuthModal();
                 renderProfile();
                 showAlert(`Welcome ${user.name}!`, 'success');
@@ -294,9 +331,16 @@
             users.push(newUser);
             saveUsers();
             saveCurrentUser(newUser);
+            if(roleType === 'both') localStorage.setItem('activeRole', 'student');
             closeAuthModal();
             renderProfile();
-            showAlert('Registration successful! You can now act as both Student and Tutor!', 'success');
+            showAlert('Registration successful!', 'success');
+        }
+        
+        function switchActingRole(role) {
+            localStorage.setItem('activeRole', role);
+            renderProfile();
+            showAlert(`你现在正在以 ${role === 'student' ? 'Student' : 'Tutor'} 身份操作`, 'success');
         }
         
         function addTutorRole() {
@@ -308,8 +352,9 @@
                 if(index !== -1) users[index] = currentUser;
                 saveUsers();
                 saveCurrentUser(currentUser);
+                localStorage.setItem('activeRole', 'student');
                 renderProfile();
-                showAlert('Tutor role added! You can now apply for tuition jobs.', 'success');
+                showAlert('Tutor role added! You can now switch between roles.', 'success');
             }
         }
         
@@ -322,8 +367,9 @@
                 if(index !== -1) users[index] = currentUser;
                 saveUsers();
                 saveCurrentUser(currentUser);
+                localStorage.setItem('activeRole', 'student');
                 renderProfile();
-                showAlert('Student role added! You can now post tuition jobs.', 'success');
+                showAlert('Student role added! You can now switch between roles.', 'success');
             }
         }
         
@@ -342,6 +388,7 @@
             const studentData = currentUser.studentProfile || {};
             const tutorData = currentUser.tutorProfile || {};
             const tutorSubjects = tutorData.subjects || [];
+            const activeRole = localStorage.getItem('activeRole') || 'student';
             
             let profileHtml = `
                 <div class="card">
@@ -362,6 +409,27 @@
                         <div class="info-row"><span class="info-label"><i class="fas fa-phone"></i> Phone:</span><span class="info-value">${currentUser.phone}</span><button class="info-edit-btn" onclick="openEditModal()"><i class="fas fa-edit"></i></button></div>
                     </div>
             `;
+            
+            // Role Switcher Section (ONLY for users with both roles)
+            if(hasBoth) {
+                profileHtml += `
+                    <div class="role-switch-card">
+                        <h3><i class="fas fa-exchange-alt"></i> Switch Acting Role</h3>
+                        <p>Choose how you want to act on the platform:</p>
+                        <div class="role-switch-buttons">
+                            <button class="role-switch-btn ${activeRole === 'student' ? 'active' : ''}" onclick="switchActingRole('student')">
+                                <i class="fas fa-user-graduate"></i> Act as Student
+                            </button>
+                            <button class="role-switch-btn ${activeRole === 'tutor' ? 'active' : ''}" onclick="switchActingRole('tutor')">
+                                <i class="fas fa-chalkboard-teacher"></i> Act as Tutor
+                            </button>
+                        </div>
+                        <div class="current-acting-role" style="margin-top: 15px; background: rgba(255,255,255,0.2);">
+                            <small>Currently acting as: <strong>${activeRole === 'student' ? 'Student' : 'Tutor'}</strong></small>
+                        </div>
+                    </div>
+                `;
+            }
             
             // Student Section
             if(hasBoth || currentUser.role === 'student') {
@@ -539,7 +607,7 @@
             }
         }
         
-        function logout() { clearCurrentUser(); renderProfile(); showAlert('Logged out!', 'success'); }
+        function logout() { clearCurrentUser(); localStorage.removeItem('activeRole'); renderProfile(); showAlert('Logged out!', 'success'); }
         
         window.onclick = function(e) { if(e.target.classList.contains('modal')) e.target.style.display = 'none'; }
         
