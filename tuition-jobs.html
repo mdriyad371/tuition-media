@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Tuition Media - Tuition Jobs</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; padding-bottom: 70px; }
+        
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: white; display: flex; justify-content: space-around;
+            padding: 10px 0; box-shadow: 0 -2px 15px rgba(0,0,0,0.1);
+            z-index: 1000; border-top: 1px solid #e0e0e0;
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 5px; padding: 5px 15px; border-radius: 10px;
+            text-decoration: none; color: #666;
+        }
+        .nav-item.active { color: #667eea; }
+        .nav-icon { font-size: 24px; }
+        .nav-label { font-size: 12px; font-weight: 500; }
+        
+        .page { padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .page-header { margin-bottom: 20px; }
+        .page-header h1 { font-size: 24px; color: #333; }
+        
+        .card {
+            background: white; border-radius: 15px; padding: 20px;
+            margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .btn {
+            padding: 12px 24px; border: none; border-radius: 10px;
+            cursor: pointer; font-size: 14px; font-weight: 600;
+            transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-outline { background: transparent; border: 2px solid #667eea; color: #667eea; }
+        .btn-wa { background: #25D366; color: white; text-decoration: none; justify-content: center; margin-top: 15px; width: 100%; }
+        
+        .filter-section {
+            background: white; border-radius: 15px; padding: 20px;
+            margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .filter-group { margin-bottom: 15px; }
+        .filter-group label { display: block; margin-bottom: 8px; font-weight: 600; }
+        .filter-group input, .filter-group select {
+            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;
+        }
+        .filter-buttons { display: flex; gap: 10px; margin-top: 15px; }
+        .filter-buttons button { flex: 1; }
+        
+        .job-details { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0; font-size: 14px; color: #666; }
+        .salary { color: #667eea; font-weight: bold; font-size: 18px; }
+        .hidden-contact { background: #f0f0f0; padding: 10px; border-radius: 8px; text-align: center; color: #666; font-style: italic; }
+        .admin-panel { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin-top: 15px; border-radius: 10px; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;
+        }
+        
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: white; border-radius: 20px; padding: 25px;
+            max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;
+        }
+        
+        @media (max-width: 768px) { .page { padding: 15px; } .job-details { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="bottom-nav">
+        <a href="index.html" class="nav-item"><div class="nav-icon">🏠</div><div class="nav-label">Home</div></a>
+        <a href="find-tutors.html" class="nav-item"><div class="nav-icon">🔍</div><div class="nav-label">Find Tutors</div></a>
+        <a href="tuition-jobs.html" class="nav-item active"><div class="nav-icon">💼</div><div class="nav-label">Tuition Jobs</div></a>
+        <a href="profile.html" class="nav-item"><div class="nav-icon">👤</div><div class="nav-label">Profile</div></a>
+    </div>
+
+    <div class="page">
+        <div class="page-header"><h1>💼 Tuition Jobs</h1><button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="showPostModal()">+ Post a Tuition Job</button></div>
+        
+        <div class="filter-section">
+            <div class="filter-title"><strong>🔍 Filter Tuition Jobs</strong></div>
+            <div class="filter-group"><label>📍 এলাকা</label><select id="filterArea"><option value="">সব এলাকা</option><option>ধানমন্ডি</option><option>গুলশান</option><option>উত্তরা</option><option>মিরপুর</option></select></div>
+            <div class="filter-group"><label>🎓 ক্লাস</label><select id="filterClass"><option value="">সব ক্লাস</option><option>Class 1-5</option><option>Class 6-8</option><option>Class 9-10</option><option>HSC</option><option>University</option></select></div>
+            <div class="filter-group"><label>📖 মাধ্যম</label><select id="filterMedium"><option value="">সব মাধ্যম</option><option>Bangla</option><option>English</option></select></div>
+            <div class="filter-group"><label>💰 নূন্যতম বেতন</label><input type="number" id="filterMin" placeholder="e.g., 5000"></div>
+            <div class="filter-group"><label>💰 সর্বোচ্চ বেতন</label><input type="number" id="filterMax" placeholder="e.g., 15000"></div>
+            <div class="filter-buttons"><button class="btn btn-primary" onclick="applyFilters()"><i class="fas fa-search"></i> Apply Filters</button><button class="btn btn-outline" onclick="resetFilters()"><i class="fas fa-undo"></i> Reset</button></div>
+        </div>
+        
+        <div id="jobsList"></div>
+    </div>
+
+    <!-- Post Job Modal -->
+    <div id="postModal" class="modal">
+        <div class="modal-content"><h2 style="margin-bottom:20px;">📢 Post a Tuition Job</h2>
+            <div class="form-group"><label>সাবজেক্ট</label><input type="text" id="jobSubject" placeholder="e.g., Mathematics, Physics"></div>
+            <div class="form-group"><label>ক্লাস</label><select id="jobClass"><option>Class 1-5</option><option>Class 6-8</option><option>Class 9-10</option><option>HSC</option><option>University</option></select></div>
+            <div class="form-group"><label>মাধ্যম</label><select id="jobMedium"><option>Bangla</option><option>English</option></select></div>
+            <div class="form-group"><label>এলাকা</label><input type="text" id="jobArea" placeholder="e.g., Dhanmondi"></div>
+            <div class="form-group"><label>মাসিক বেতন (BDT)</label><input type="number" id="jobSalary" placeholder="e.g., 5000"></div>
+            <div class="form-group"><label>সপ্তাহে কত দিন</label><input type="number" id="jobDays" placeholder="5"></div>
+            <div class="form-group"><label>দৈনিক কত ঘন্টা</label><input type="number" id="jobHours" placeholder="1.5"></div>
+            <div class="form-group"><label>আপনার ফোন নম্বর (শুধু এডমিন দেখবে)</label><input type="tel" id="studentPhone" placeholder="Enter your phone number"></div>
+            <div class="form-group"><label>বিস্তারিত</label><textarea id="jobDesc" rows="3" placeholder="Any specific requirements..."></textarea></div>
+            <button class="btn btn-primary" style="width:100%" onclick="postJob()">Post Job</button>
+            <button class="btn btn-outline" style="width:100%; margin-top:10px;" onclick="closePostModal()">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        const ADMIN_WHATSAPP = "88017091303712";
+        let currentUser = null;
+        let tuitionJobs = [
+            { id:1, subject:"গণিত", class:"Class 9-10", area:"ধানমন্ডি", medium:"Bangla", salary:8000, daysPerWeek:5, hoursPerDay:1.5, description:"অভিজ্ঞ গণিত শিক্ষক প্রয়োজন", studentName:"রহমান পরিবার", studentPhone:"01711223344", postedDate:"2024-01-15" },
+            { id:2, subject:"ইংরেজি", class:"HSC", area:"গুলশান", medium:"English", salary:10000, daysPerWeek:4, hoursPerDay:2, description:"এইচএসসি ইংরেজি টিউটর প্রয়োজন", studentName:"আহমেদ পরিবার", studentPhone:"01811223344", postedDate:"2024-01-14" },
+            { id:3, subject:"পদার্থবিজ্ঞান", class:"Class 9-10", area:"উত্তরা", medium:"Bangla", salary:7000, daysPerWeek:5, hoursPerDay:1.5, description:"বিজ্ঞান বিভাগের জন্য টিউটর", studentName:"করিম পরিবার", studentPhone:"01911223344", postedDate:"2024-01-13" },
+            { id:4, subject:"প্রোগ্রামিং", class:"University", area:"মিরপুর", medium:"English", salary:12000, daysPerWeek:3, hoursPerDay:2, description:"Python/Java টিউটর প্রয়োজন", studentName:"হাসান", studentPhone:"01511223344", postedDate:"2024-01-12" }
+        ];
+        
+        let filters = { area:'', class:'', medium:'', min:'', max:'' };
+        
+        function checkLogin() { const saved = localStorage.getItem('currentUser'); if (saved) currentUser = JSON.parse(saved); }
+        
+        function renderJobs() {
+            let filtered = [...tuitionJobs];
+            if(filters.area) filtered = filtered.filter(j=>j.area.includes(filters.area));
+            if(filters.class) filtered = filtered.filter(j=>j.class===filters.class);
+            if(filters.medium) filtered = filtered.filter(j=>j.medium===filters.medium);
+            if(filters.min) filtered = filtered.filter(j=>j.salary >= parseInt(filters.min));
+            if(filters.max) filtered = filtered.filter(j=>j.salary <= parseInt(filters.max));
+            
+            const html = filtered.map(job => `
+                <div class="card">
+                    <div class="job-title">📖 ${job.subject}</div>
+                    <div class="job-details">
+                        <div>🎓 ${job.class}</div><div>📍 ${job.area}</div>
+                        <div>📖 ${job.medium}</div><div>⏰ ${job.daysPerWeek} days/week</div>
+                        <div>👤 ${job.studentName}</div><div>📅 ${job.postedDate}</div>
+                    </div>
+                    <div class="salary">💰 Tk ${job.salary}/month</div>
+                    <div style="padding:10px; background:#f8f9fa; border-radius:10px;">${job.description}</div>
+                    ${currentUser?.role === 'admin' ? `
+                        <div class="admin-panel"><strong>🔐 Admin Only:</strong><br>📞 Phone: ${job.studentPhone}<br><button class="btn btn-primary" style="margin-top:10px;" onclick="copyToClipboard('${job.studentPhone}')"><i class="fas fa-copy"></i> Copy Phone</button></div>
+                    ` : currentUser?.role === 'tutor' ? `
+                        <div class="hidden-contact"><i class="fas fa-lock"></i> Student contact info is hidden. Apply via WhatsApp.</div>
+                        <a href="https://wa.me/${ADMIN_WHATSAPP}?text=আমি%20${job.subject}%20টিউশনটির%20জন্য%20আগ্রহী।%0A📚%20ক্লাস:%20${job.class}%0A📍%20এলাকা:%20${job.area}%0A💰%20বেতন:%20Tk%20${job.salary}%0A👨‍🏫%20নাম:%20${currentUser.name}%0A📞%20ফোন:%20${currentUser.phone}" class="btn btn-wa" target="_blank"><i class="fab fa-whatsapp"></i> Apply for this job</a>
+                    ` : `<div class="hidden-contact"><i class="fas fa-lock"></i> Please login as tutor to apply</div>`}
+                </div>
+            `).join('');
+            document.getElementById('jobsList').innerHTML = html || '<p>No jobs found</p>';
+        }
+        
+        function applyFilters() {
+            filters.area = document.getElementById('filterArea')?.value || '';
+            filters.class = document.getElementById('filterClass')?.value || '';
+            filters.medium = document.getElementById('filterMedium')?.value || '';
+            filters.min = document.getElementById('filterMin')?.value || '';
+            filters.max = document.getElementById('filterMax')?.value || '';
+            renderJobs();
+        }
+        
+        function resetFilters() {
+            if(document.getElementById('filterArea')) document.getElementById('filterArea').value = '';
+            if(document.getElementById('filterClass')) document.getElementById('filterClass').value = '';
+            if(document.getElementById('filterMedium')) document.getElementById('filterMedium').value = '';
+            if(document.getElementById('filterMin')) document.getElementById('filterMin').value = '';
+            if(document.getElementById('filterMax')) document.getElementById('filterMax').value = '';
+            filters = { area:'', class:'', medium:'', min:'', max:'' };
+            renderJobs();
+        }
+        
+        function showPostModal() {
+            if(!currentUser) { alert('Please login first'); return; }
+            if(currentUser.role !== 'student') { alert('Only students can post jobs'); return; }
+            document.getElementById('postModal').style.display = 'flex';
+        }
+        
+        function closePostModal() { document.getElementById('postModal').style.display = 'none'; }
+        
+        function postJob() {
+            if(!currentUser || currentUser.role !== 'student') { alert('Only students can post'); return; }
+            const phone = document.getElementById('studentPhone').value;
+            if(!phone) { alert('Please provide your phone number'); return; }
+            
+            const newJob = {
+                id: tuitionJobs.length+1,
+                subject: document.getElementById('jobSubject').value,
+                class: document.getElementById('jobClass').value,
+                medium: document.getElementById('jobMedium').value,
+                area: document.getElementById('jobArea').value,
+                salary: parseInt(document.getElementById('jobSalary').value),
+                daysPerWeek: parseInt(document.getElementById('jobDays').value),
+                hoursPerDay: parseFloat(document.getElementById('jobHours').value),
+                description: document.getElementById('jobDesc').value,
+                studentName: currentUser.name,
+                studentPhone: phone,
+                postedDate: new Date().toISOString().split('T')[0]
+            };
+            tuitionJobs.unshift(newJob);
+            alert('✅ Job posted successfully!');
+            closePostModal();
+            renderJobs();
+        }
+        
+        function copyToClipboard(text) { navigator.clipboard.writeText(text); alert('Copied!'); }
+        
+        window.onclick = function(e) { if(e.target.classList.contains('modal')) e.target.style.display = 'none'; }
+        
+        checkLogin();
+        renderJobs();
+    </script>
+</body>
+</html>
